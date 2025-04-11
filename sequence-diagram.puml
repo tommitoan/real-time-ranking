@@ -1,0 +1,30 @@
+@startuml
+actor Client
+participant "Go API Server" as Server
+participant "Redis" as Redis
+
+== POST /interactions ==
+
+Client -> Server: POST /interactions (video_id, user_id, interactions)
+activate Server
+Server -> Redis: ZINCRBY ranking:global score video_id
+Server -> Redis: ZINCRBY ranking:user:{user_id} score video_id
+Server --> Client: 200 OK (Score updated)
+deactivate Server
+
+== GET /rankings/global ==
+
+Client -> Server: GET /rankings/global?limit=N
+activate Server
+Server -> Redis: ZREVRANGE ranking:global 0 N WITHSCORES
+Server --> Client: 200 OK [video_id, score, ...]
+deactivate Server
+
+== GET /rankings/user/{user_id} ==
+
+Client -> Server: GET /rankings/user/{user_id}?limit=N
+activate Server
+Server -> Redis: ZREVRANGE ranking:user:{user_id} 0 N WITHSCORES
+Server --> Client: 200 OK [video_id, score, ...]
+deactivate Server
+@enduml

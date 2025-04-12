@@ -7,6 +7,16 @@ paths:
     get:
       summary: Get real-time video rankings
       description: Retrieve the current rankings of videos based on real-time data.
+      parameters:
+        - name: limit
+          in: query
+          description: The maximum number of rankings to retrieve
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 10
+            minimum: 1
       responses:
         '200':
           description: OK
@@ -19,6 +29,7 @@ paths:
     get:
       summary: Get real-time rankings for a specific user
       description: Retrieve the rankings for a user based on their unique userID.
+
       parameters:
         - name: userID
           in: path
@@ -26,6 +37,15 @@ paths:
           required: true
           schema:
             type: string
+        - name: limit
+          in: query
+          description: The maximum number of rankings to retrieve
+          required: false
+          schema:
+            type: integer
+            format: int64
+            default: 10
+            minimum: 1
       responses:
         '200':
           description: OK

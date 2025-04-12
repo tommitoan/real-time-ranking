@@ -22,7 +22,6 @@ func NewServer(cfg config.App) *Server {
 	srv := handler.NewServer()
 	r := chi.NewRouter()
 
-	// Middleware
 	r.Use(middleware.Logger)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -31,6 +30,11 @@ func NewServer(cfg config.App) *Server {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+
+	r.Route("/docs", func(r chi.Router) {
+		fs := http.StripPrefix("/docs", http.FileServer(http.Dir("./docs")))
+		r.Get("/*", fs.ServeHTTP)
+	})
 
 	handler.HandlerFromMux(srv, r)
 

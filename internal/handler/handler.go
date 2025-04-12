@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"real-time-ranking/internal/models"
 	"real-time-ranking/internal/service"
-	"strconv"
 )
 
 type Server struct{}
@@ -31,17 +30,8 @@ func (s *Server) PostInteractions(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Score updated successfully"))
 }
 
-func (s *Server) GetRankings(w http.ResponseWriter, req *http.Request) {
-	limit := 10
-	if limitStr := req.URL.Query().Get("limit"); limitStr != "" {
-		if parsed, err := strconv.Atoi(limitStr); err == nil {
-			limit = parsed
-		} else {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	}
-
-	data, err := service.GetGlobalRankings(req.Context(), int64(limit))
+func (s *Server) GetRankings(w http.ResponseWriter, req *http.Request, params GetRankingsParams) {
+	data, err := service.GetGlobalRankings(req.Context(), val(params.Limit))
 	if err != nil {
 		http.Error(w, "Failed to fetch global rankings", http.StatusInternalServerError)
 		return
@@ -55,17 +45,8 @@ func (s *Server) GetRankings(w http.ResponseWriter, req *http.Request) {
 	writeJSONResponse(w, &RankingsResponse{Rankings: &res})
 }
 
-func (s *Server) GetRankingsUserUserID(w http.ResponseWriter, req *http.Request, userID string) {
-	limit := 10
-	if limitStr := req.URL.Query().Get("limit"); limitStr != "" {
-		if parsed, err := strconv.Atoi(limitStr); err == nil {
-			limit = parsed
-		} else {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	}
-
-	data, err := service.GetUserRankings(req.Context(), int64(limit), userID)
+func (s *Server) GetRankingsUserUserID(w http.ResponseWriter, req *http.Request, userID string, params GetRankingsUserUserIDParams) {
+	data, err := service.GetUserRankings(req.Context(), val(params.Limit), userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch user rankings", http.StatusInternalServerError)
 		return

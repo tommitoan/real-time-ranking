@@ -23,3 +23,11 @@ func convertToVideoRank(vr models.VideoRanking) VideoRank {
 func ptr[T any](v T) *T {
 	return &v
 }
+
+func val[T any](p *T) T {
+	var zero T
+	if p == nil {
+		return zero
+	}
+	return *p
+}

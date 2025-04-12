@@ -1,12 +1,13 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/model"
-	"real-time-ranking/internal/redisdb"
 	"real-time-ranking/internal/score"
 )
 
@@ -42,8 +43,8 @@ func (s *Server) HandleInteraction(w http.ResponseWriter, r *http.Request) {
 
 	vidScore := score.CalculateVideoScore(req)
 	key := "ranking:global"
-	ctx := redisdb.GetContext()
-	client := redisdb.GetClient()
+	ctx := context.Background()
+	client := cache.GetClient()
 
 	if err := client.ZIncrBy(ctx, key, vidScore, req.VideoID).Err(); err != nil {
 		log.Println("Redis update failed (global):", err)

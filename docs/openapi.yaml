@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: Real-Time Ranking API
+  version: 1.0.0
+paths:
+  /rankings:
+    get:
+      summary: Get real-time video rankings
+      description: Retrieve the current rankings of videos based on real-time data.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingsResponse'
+
+  /rankings/user/{userID}:
+    get:
+      summary: Get real-time rankings for a specific user
+      description: Retrieve the rankings for a user based on their unique userID.
+      parameters:
+        - name: userID
+          in: path
+          description: The user ID to fetch rankings for.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRankingResponse'
+
+  /interactions:
+    post:
+      summary: Handle interactions (e.g., update user ranking or interactions with the video)
+      description: Receive and process interactions such as voting or user engagement with a video.
+      responses:
+        '200':
+          description: Interaction successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InteractionResponse'
+
+components:
+  schemas:
+    RankingsResponse:
+      type: object
+      properties:
+        rankings:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoRank'
+    VideoRank:
+      type: object
+      properties:
+        video_id:
+          type: string
+        score:
+          type: number
+          format: float
+
+    UserRankingResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        rank:
+          type: integer
+        points:
+          type: number
+          format: float
+
+    InteractionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: string
+          enum:
+            - success
+            - failure

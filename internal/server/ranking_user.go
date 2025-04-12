@@ -1,11 +1,12 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"net/http"
+	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/model"
-	"real-time-ranking/internal/redisdb"
 )
 
 // HandleGetUserRankings godoc
@@ -23,8 +24,8 @@ func (s *Server) HandleGetUserRankings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := "ranking:user:" + userID
-	ctx := redisdb.GetContext()
-	client := redisdb.GetClient()
+	ctx := context.Background()
+	client := cache.GetClient()
 
 	// Get top 10 videos
 	results, err := client.ZRevRangeWithScores(ctx, key, 0, 9).Result()

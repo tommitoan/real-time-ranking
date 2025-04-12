@@ -8,11 +8,14 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	"net/http"
-	_ "real-time-ranking/docs"
+	"real-time-ranking/internal/api"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
+	rankingAPI := &RankingAPI{}
+	handler := api.Handler(rankingAPI)
+
 	r.Use(middleware.Logger)
 
 	r.Use(cors.Handler(cors.Options{
@@ -22,6 +25,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	r.Mount("/api", handler)
 
 	r.Get("/", s.HelloWorldHandler)
 	r.Post("/interactions", s.HandleInteraction)

@@ -22,8 +22,9 @@ tmp/
 .vscode
 .idea
 
-# .env file
+# Config file
 .env
+config.yaml
 
 # Project build
 main
@@ -31,6 +32,3 @@ main
 
 # OS X generated file
 .DS_Store
-
-# Swagger
-docs

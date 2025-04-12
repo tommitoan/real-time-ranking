@@ -1,10 +1,11 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/model"
-	"real-time-ranking/internal/redisdb"
 	"strconv"
 )
 
@@ -25,8 +26,8 @@ func (s *Server) HandleGetRankings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := "ranking:global"
-	ctx := redisdb.GetContext()
-	client := redisdb.GetClient()
+	ctx := context.Background()
+	client := cache.GetClient()
 
 	results, err := client.ZRevRangeWithScores(ctx, key, 0, limit-1).Result()
 	if err != nil {

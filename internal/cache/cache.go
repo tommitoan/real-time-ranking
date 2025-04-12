@@ -31,4 +31,11 @@ func GetClient() *redis.Client {
 	return client
 }
 
-func Close() { _c.Close() }
+func Close() {
+	err := _c.Close()
+	if err != nil {
+		log.Fatalln("Failed to close redis:", err)
+		return
+	}
+	log.Println("Closed redis")
+}

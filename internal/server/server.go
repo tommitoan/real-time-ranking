@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"real-time-ranking/internal/api"
+	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/config"
 	"time"
 
@@ -49,5 +51,12 @@ func (h *Server) Start() error {
 	log.Printf("Server is listening on %s...\n", h.server.Addr)
 
 	s := graceful.WithDefaults(h.server)
-	return graceful.Graceful(s.ListenAndServe, s.Shutdown)
+
+	shutdown := graceful.ShutdownFunc(func(ctx context.Context) error {
+		log.Println("Shutting down gracefully...")
+		cache.Close()
+		return s.Shutdown(context.Background())
+	})
+
+	return graceful.Graceful(s.ListenAndServe, shutdown)
 }

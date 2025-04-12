@@ -1,0 +1,5 @@
+package: handler
+generate:
+  chi-server: true
+  models: true
+output: internal/handler/gen.go

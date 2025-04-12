@@ -8,12 +8,10 @@ import (
 	"github.com/ory/graceful"
 	"log"
 	"net/http"
-	"real-time-ranking/internal/api"
 	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/config"
+	"real-time-ranking/internal/handler"
 	"time"
-
-	_ "github.com/joho/godotenv/autoload"
 )
 
 type Server struct {
@@ -21,7 +19,7 @@ type Server struct {
 }
 
 func NewServer(cfg config.App) *Server {
-	srv := api.NewServer()
+	srv := handler.NewServer()
 	r := chi.NewRouter()
 
 	// Middleware
@@ -34,7 +32,7 @@ func NewServer(cfg config.App) *Server {
 		MaxAge:           300,
 	}))
 
-	api.HandlerFromMux(srv, r)
+	handler.HandlerFromMux(srv, r)
 
 	httpSrv := &http.Server{
 		Handler:      r,

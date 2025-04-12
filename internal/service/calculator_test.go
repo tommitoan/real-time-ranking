@@ -1,27 +1,27 @@
-package score
+package service
 
 import (
-	"real-time-ranking/internal/model"
+	"real-time-ranking/internal/models"
 	"testing"
 )
 
 func TestCalculateVideoScore(t *testing.T) {
 	type args struct {
-		req model.InteractionRequest
+		req models.InteractionRequest
 	}
 	tests := []struct {
 		name string
 		args args
 		want float64
 	}{
-		{name: "case_1", args: args{req: model.InteractionRequest{
+		{name: "case_1", args: args{req: models.InteractionRequest{
 			Views:     1,
 			Likes:     1,
 			Comments:  1,
 			Shares:    1,
 			WatchTime: 10,
 		}}, want: 14},
-		{name: "case_2", args: args{req: model.InteractionRequest{
+		{name: "case_2", args: args{req: models.InteractionRequest{
 			Views:     100,
 			Likes:     5,
 			Comments:  0,

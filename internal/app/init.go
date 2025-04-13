@@ -23,7 +23,7 @@ func InitRedis(cfg config.Redis) {
 
 func InitDatabase(cfg config.Database) {
 	ctx := context.Background()
-	db.InitDataSource(ctx, cfg)
+	db.InitDataSource(ctx, cfg.DSN, cfg.Debug)
 }
 
 func Close() {

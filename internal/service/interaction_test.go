@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"real-time-ranking/internal/cache"
 	"real-time-ranking/internal/models"
-	"real-time-ranking/internal/service"
 )
 
 func TestPostInteractions_Integration(t *testing.T) {
@@ -29,7 +28,7 @@ func TestPostInteractions_Integration(t *testing.T) {
 	globalKey := "ranking:global"
 	userKey := fmt.Sprintf("ranking:user:%s", userID)
 
-	err := service.PostInteractions(ctx, req)
+	err := s.PostInteractions(ctx, req)
 	require.NoError(t, err)
 
 	globalScore, err := client.ZScore(ctx, globalKey, videoID).Result()

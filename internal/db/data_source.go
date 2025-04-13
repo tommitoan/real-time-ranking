@@ -8,7 +8,6 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
 	"log"
-	"real-time-ranking/internal/config"
 	"real-time-ranking/internal/models"
 )
 
@@ -30,9 +29,9 @@ type datasource struct {
 	db *bun.DB
 }
 
-func InitDataSource(ctx context.Context, cfg config.Database) {
-	db := bun.NewDB(sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(cfg.DSN))), pgdialect.New())
-	if cfg.Debug {
+func InitDataSource(ctx context.Context, dsn string, debug bool) {
+	db := bun.NewDB(sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn))), pgdialect.New())
+	if debug {
 		db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 	}
 	if err := db.PingContext(ctx); err != nil {

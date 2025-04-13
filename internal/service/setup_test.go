@@ -3,6 +3,8 @@ package service_test
 import (
 	"context"
 	"os"
+	"real-time-ranking/internal/db"
+	"real-time-ranking/internal/service"
 	"testing"
 
 	"github.com/alicebob/miniredis/v2"
@@ -12,6 +14,7 @@ import (
 var (
 	testRedis *miniredis.Miniredis
 	ctx       = context.Background()
+	s         service.Service
 )
 
 func TestMain(m *testing.M) {
@@ -23,6 +26,7 @@ func TestMain(m *testing.M) {
 	defer testRedis.Close()
 
 	cache.Init(testRedis.Addr())
+	s = service.NewService(db.TestDataSource())
 
 	code := m.Run()
 	os.Exit(code)

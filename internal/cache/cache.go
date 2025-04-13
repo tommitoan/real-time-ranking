@@ -21,14 +21,13 @@ func Init(addr string) {
 		Addr: addr,
 	})
 
-	pong, err := client.Ping(context.Background()).Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalln("failed to connect to redis: ", err)
+		log.Fatalln("failed to connect to cache:", err)
 	}
-	log.Println("Redis ping succeeded:", pong)
 
 	_c = client
-	log.Println("Connected to Redis")
+	log.Println("Connected to cache")
 }
 
 func GetClient() *redis.Client {
@@ -45,5 +44,5 @@ func Close() {
 		log.Fatalln("Failed to close redis:", err)
 		return
 	}
-	log.Println("Closed redis")
+	log.Println("Closed cache")
 }

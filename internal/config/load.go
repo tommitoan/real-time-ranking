@@ -9,8 +9,9 @@ var Config Service
 
 type (
 	Service struct {
-		App   App   `yaml:"app"`
-		Redis Redis `yaml:"redis"`
+		App      App      `yaml:"app"`
+		Redis    Redis    `yaml:"redis"`
+		Database Database `yaml:"database"`
 	}
 	App struct {
 		LoggingLevel string `yaml:"logging_level"`
@@ -18,6 +19,15 @@ type (
 	}
 	Redis struct {
 		ConnectionString string `yaml:"connection_string"`
+	}
+	Database struct {
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		Name     string `yaml:"name"`
+		DSN      string `yaml:"dsn"`
+		Debug    bool   `yaml:"debug"`
 	}
 )
 

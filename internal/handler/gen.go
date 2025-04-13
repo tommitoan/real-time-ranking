@@ -17,6 +17,12 @@ const (
 	Success InteractionResponseStatus = "success"
 )
 
+// CreateUserRequest defines model for CreateUserRequest.
+type CreateUserRequest struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+}
+
 // InteractionResponse defines model for InteractionResponse.
 type InteractionResponse struct {
 	Message *string                    `json:"message,omitempty"`
@@ -38,11 +44,20 @@ type UserRankingResponse struct {
 	UserId *string  `json:"user_id,omitempty"`
 }
 
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	Id       *string `json:"id,omitempty"`
+	Username *string `json:"username,omitempty"`
+}
+
 // VideoRank defines model for VideoRank.
 type VideoRank struct {
 	Score   *float32 `json:"score,omitempty"`
 	VideoId *string  `json:"video_id,omitempty"`
 }
+
+// PostUsersJSONRequestBody defines body for PostUsers for application/json ContentType.
+type PostUsersJSONRequestBody = CreateUserRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -55,6 +70,9 @@ type ServerInterface interface {
 	// Get real-time rankings for a specific user
 	// (GET /rankings/{top}/{userID})
 	GetRankingsTopUserID(w http.ResponseWriter, r *http.Request, top int64, userID string)
+	// Create a new user
+	// (POST /users)
+	PostUsers(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -76,6 +94,12 @@ func (_ Unimplemented) GetRankingsTop(w http.ResponseWriter, r *http.Request, to
 // Get real-time rankings for a specific user
 // (GET /rankings/{top}/{userID})
 func (_ Unimplemented) GetRankingsTopUserID(w http.ResponseWriter, r *http.Request, top int64, userID string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create a new user
+// (POST /users)
+func (_ Unimplemented) PostUsers(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -155,6 +179,21 @@ func (siw *ServerInterfaceWrapper) GetRankingsTopUserID(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetRankingsTopUserID(w, r, top, userID)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostUsers operation middleware
+func (siw *ServerInterfaceWrapper) PostUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostUsers(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -285,6 +324,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/rankings/{top}/{userID}", wrapper.GetRankingsTopUserID)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/users", wrapper.PostUsers)
 	})
 
 	return r

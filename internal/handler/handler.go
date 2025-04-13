@@ -59,3 +59,20 @@ func (s *Server) GetRankingsTopUserID(w http.ResponseWriter, req *http.Request, 
 
 	writeJSONResponse(w, &RankingsResponse{Rankings: &res})
 }
+
+func (s *Server) PostUsers(w http.ResponseWriter, req *http.Request) {
+	var r models.CreateUserRequest
+	if err := json.NewDecoder(req.Body).Decode(&r); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	id, err := service.CreateUser(req.Context(), r)
+	if err != nil {
+		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	writeJSONResponse(w, &UserResponse{Id: ptr(id), Username: ptr(r.Username)})
+}

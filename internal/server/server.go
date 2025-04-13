@@ -8,7 +8,7 @@ import (
 	"github.com/ory/graceful"
 	"log"
 	"net/http"
-	"real-time-ranking/internal/cache"
+	"real-time-ranking/internal/app"
 	"real-time-ranking/internal/config"
 	"real-time-ranking/internal/handler"
 	"time"
@@ -56,7 +56,7 @@ func (h *Server) Start() error {
 
 	shutdown := graceful.ShutdownFunc(func(ctx context.Context) error {
 		log.Println("Shutting down gracefully...")
-		cache.Close()
+		app.Close()
 		return s.Shutdown(context.Background())
 	})
 

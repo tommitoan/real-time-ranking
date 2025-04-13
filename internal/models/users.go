@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type CreateVideoRequest struct {
+	Description string `json:"description,omitempty"`
+	OwnerId     string `json:"owner_id"`
+	Thumbnail   string `json:"thumbnail,omitempty"`
+	Title       string `json:"title"`
+	Url         string `json:"url"`
+}
+
 type CreateUserRequest struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`

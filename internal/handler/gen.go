@@ -6,6 +6,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
@@ -22,6 +23,15 @@ const (
 type CreateUserRequest struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
+}
+
+// CreateVideoRequest defines model for CreateVideoRequest.
+type CreateVideoRequest struct {
+	Description *string `json:"description,omitempty"`
+	OwnerId     string  `json:"owner_id"`
+	Thumbnail   *string `json:"thumbnail,omitempty"`
+	Title       string  `json:"title"`
+	Url         string  `json:"url"`
 }
 
 // InteractionResponse defines model for InteractionResponse.
@@ -44,6 +54,13 @@ type UpdateUserRequest struct {
 	Username string              `json:"username"`
 }
 
+// UpdateVideoRequest defines model for UpdateVideoRequest.
+type UpdateVideoRequest struct {
+	Description *string `json:"description,omitempty"`
+	Thumbnail   *string `json:"thumbnail,omitempty"`
+	Title       *string `json:"title,omitempty"`
+}
+
 // UserRankingResponse defines model for UserRankingResponse.
 type UserRankingResponse struct {
 	Points *float32 `json:"points,omitempty"`
@@ -64,11 +81,34 @@ type VideoRank struct {
 	VideoId *string  `json:"video_id,omitempty"`
 }
 
+// VideoResponse defines model for VideoResponse.
+type VideoResponse struct {
+	Comments    *int64     `json:"comments,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	Id          *string    `json:"id,omitempty"`
+	Likes       *int64     `json:"likes,omitempty"`
+	OwnerId     *string    `json:"owner_id,omitempty"`
+	Shares      *int64     `json:"shares,omitempty"`
+	Thumbnail   *string    `json:"thumbnail,omitempty"`
+	Title       *string    `json:"title,omitempty"`
+	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	Url         *string    `json:"url,omitempty"`
+	Views       *int64     `json:"views,omitempty"`
+	WatchTime   *int64     `json:"watch_time,omitempty"`
+}
+
 // PostUsersJSONRequestBody defines body for PostUsers for application/json ContentType.
 type PostUsersJSONRequestBody = CreateUserRequest
 
 // PutUsersIdJSONRequestBody defines body for PutUsersId for application/json ContentType.
 type PutUsersIdJSONRequestBody = UpdateUserRequest
+
+// PostVideosJSONRequestBody defines body for PostVideos for application/json ContentType.
+type PostVideosJSONRequestBody = CreateVideoRequest
+
+// PutVideosIdJSONRequestBody defines body for PutVideosId for application/json ContentType.
+type PutVideosIdJSONRequestBody = UpdateVideoRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -93,6 +133,18 @@ type ServerInterface interface {
 	// Update user by ID
 	// (PUT /users/{id})
 	PutUsersId(w http.ResponseWriter, r *http.Request, id string)
+	// Create a video
+	// (POST /videos)
+	PostVideos(w http.ResponseWriter, r *http.Request)
+	// Delete a video by ID
+	// (DELETE /videos/{id})
+	DeleteVideosId(w http.ResponseWriter, r *http.Request, id string)
+	// Get a video by ID
+	// (GET /videos/{id})
+	GetVideosId(w http.ResponseWriter, r *http.Request, id string)
+	// Update a video by ID
+	// (PUT /videos/{id})
+	PutVideosId(w http.ResponseWriter, r *http.Request, id string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -138,6 +190,30 @@ func (_ Unimplemented) GetUsersId(w http.ResponseWriter, r *http.Request, id str
 // Update user by ID
 // (PUT /users/{id})
 func (_ Unimplemented) PutUsersId(w http.ResponseWriter, r *http.Request, id string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create a video
+// (POST /videos)
+func (_ Unimplemented) PostVideos(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete a video by ID
+// (DELETE /videos/{id})
+func (_ Unimplemented) DeleteVideosId(w http.ResponseWriter, r *http.Request, id string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get a video by ID
+// (GET /videos/{id})
+func (_ Unimplemented) GetVideosId(w http.ResponseWriter, r *http.Request, id string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update a video by ID
+// (PUT /videos/{id})
+func (_ Unimplemented) PutVideosId(w http.ResponseWriter, r *http.Request, id string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -319,6 +395,99 @@ func (siw *ServerInterfaceWrapper) PutUsersId(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// PostVideos operation middleware
+func (siw *ServerInterfaceWrapper) PostVideos(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostVideos(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteVideosId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteVideosId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteVideosId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetVideosId operation middleware
+func (siw *ServerInterfaceWrapper) GetVideosId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetVideosId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PutVideosId operation middleware
+func (siw *ServerInterfaceWrapper) PutVideosId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutVideosId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -452,6 +621,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/users/{id}", wrapper.PutUsersId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/videos", wrapper.PostVideos)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/videos/{id}", wrapper.DeleteVideosId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/videos/{id}", wrapper.GetVideosId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/videos/{id}", wrapper.PutVideosId)
 	})
 
 	return r

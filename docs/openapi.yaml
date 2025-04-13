@@ -141,6 +141,76 @@ paths:
         '204':
           description: User deleted successfully
 
+  /videos:
+    post:
+      summary: Create a video
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVideoRequest'
+      responses:
+        '201':
+          description: Video created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+
+  /videos/{id}:
+    get:
+      summary: Get a video by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+        '404':
+          description: Video not found
+
+    put:
+      summary: Update a video by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVideoRequest'
+      responses:
+        '200':
+          description: Video updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+
+    delete:
+      summary: Delete a video by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Video deleted successfully
+
 components:
   schemas:
     RankingsResponse:
@@ -215,3 +285,65 @@ components:
           type: string
         email:
           type: string
+
+    CreateVideoRequest:
+      type: object
+      required: [ title, url, owner_id ]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        thumbnail:
+          type: string
+        owner_id:
+          type: string
+
+    UpdateVideoRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        thumbnail:
+          type: string
+
+    VideoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        thumbnail:
+          type: string
+        owner_id:
+          type: string
+        views:
+          type: integer
+          format: int64
+        likes:
+          type: integer
+          format: int64
+        comments:
+          type: integer
+          format: int64
+        shares:
+          type: integer
+          format: int64
+        watch_time:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

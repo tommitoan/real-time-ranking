@@ -41,7 +41,7 @@ func (s *Server) PutUsersId(w http.ResponseWriter, r *http.Request, id string) {
 
 	err := s.s.UpdateUser(r.Context(), id, req.Username, req.ID)
 	if err != nil {
-		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (s *Server) PutUsersId(w http.ResponseWriter, r *http.Request, id string) {
 func (s *Server) DeleteUsersId(w http.ResponseWriter, r *http.Request, id string) {
 	err := s.s.DeleteUser(r.Context(), id)
 	if err != nil {
-		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
 	}
 

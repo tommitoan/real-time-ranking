@@ -3,13 +3,13 @@ info:
   title: Real-Time Ranking API
   version: 1.0.0
 paths:
-  /rankings:
+  /rankings/{top}:
     get:
       summary: Get real-time video rankings
       description: Retrieve the current rankings of videos based on real-time data.
       parameters:
-        - name: limit
-          in: query
+        - name: top
+          in: path
           description: The maximum number of rankings to retrieve
           required: false
           schema:
@@ -25,7 +25,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RankingsResponse'
 
-  /rankings/user/{userID}:
+  /rankings/{top}/{userID}:
     get:
       summary: Get real-time rankings for a specific user
       description: Retrieve the rankings for a user based on their unique userID.
@@ -37,8 +37,8 @@ paths:
           required: true
           schema:
             type: string
-        - name: limit
-          in: query
+        - name: top
+          in: path
           description: The maximum number of rankings to retrieve
           required: false
           schema:

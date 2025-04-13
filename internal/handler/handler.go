@@ -30,8 +30,8 @@ func (s *Server) PostInteractions(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Score updated successfully"))
 }
 
-func (s *Server) GetRankings(w http.ResponseWriter, req *http.Request, params GetRankingsParams) {
-	data, err := service.GetGlobalRankings(req.Context(), val(params.Limit))
+func (s *Server) GetRankingsTop(w http.ResponseWriter, req *http.Request, limit int64) {
+	data, err := service.GetGlobalRankings(req.Context(), limit)
 	if err != nil {
 		http.Error(w, "Failed to fetch global rankings", http.StatusInternalServerError)
 		return
@@ -45,8 +45,8 @@ func (s *Server) GetRankings(w http.ResponseWriter, req *http.Request, params Ge
 	writeJSONResponse(w, &RankingsResponse{Rankings: &res})
 }
 
-func (s *Server) GetRankingsUserUserID(w http.ResponseWriter, req *http.Request, userID string, params GetRankingsUserUserIDParams) {
-	data, err := service.GetUserRankings(req.Context(), val(params.Limit), userID)
+func (s *Server) GetRankingsTopUserID(w http.ResponseWriter, req *http.Request, limit int64, userID string) {
+	data, err := service.GetUserRankings(req.Context(), limit, userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch user rankings", http.StatusInternalServerError)
 		return

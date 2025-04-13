@@ -44,29 +44,17 @@ type VideoRank struct {
 	VideoId *string  `json:"video_id,omitempty"`
 }
 
-// GetRankingsParams defines parameters for GetRankings.
-type GetRankingsParams struct {
-	// Limit The maximum number of rankings to retrieve
-	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
-}
-
-// GetRankingsUserUserIDParams defines parameters for GetRankingsUserUserID.
-type GetRankingsUserUserIDParams struct {
-	// Limit The maximum number of rankings to retrieve
-	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
-}
-
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Handle interactions (e.g., update user ranking or interactions with the video)
 	// (POST /interactions)
 	PostInteractions(w http.ResponseWriter, r *http.Request)
 	// Get real-time video rankings
-	// (GET /rankings)
-	GetRankings(w http.ResponseWriter, r *http.Request, params GetRankingsParams)
+	// (GET /rankings/{top})
+	GetRankingsTop(w http.ResponseWriter, r *http.Request, top int64)
 	// Get real-time rankings for a specific user
-	// (GET /rankings/user/{userID})
-	GetRankingsUserUserID(w http.ResponseWriter, r *http.Request, userID string, params GetRankingsUserUserIDParams)
+	// (GET /rankings/{top}/{userID})
+	GetRankingsTopUserID(w http.ResponseWriter, r *http.Request, top int64, userID string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -80,14 +68,14 @@ func (_ Unimplemented) PostInteractions(w http.ResponseWriter, r *http.Request) 
 }
 
 // Get real-time video rankings
-// (GET /rankings)
-func (_ Unimplemented) GetRankings(w http.ResponseWriter, r *http.Request, params GetRankingsParams) {
+// (GET /rankings/{top})
+func (_ Unimplemented) GetRankingsTop(w http.ResponseWriter, r *http.Request, top int64) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Get real-time rankings for a specific user
-// (GET /rankings/user/{userID})
-func (_ Unimplemented) GetRankingsUserUserID(w http.ResponseWriter, r *http.Request, userID string, params GetRankingsUserUserIDParams) {
+// (GET /rankings/{top}/{userID})
+func (_ Unimplemented) GetRankingsTopUserID(w http.ResponseWriter, r *http.Request, top int64, userID string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -115,25 +103,23 @@ func (siw *ServerInterfaceWrapper) PostInteractions(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetRankings operation middleware
-func (siw *ServerInterfaceWrapper) GetRankings(w http.ResponseWriter, r *http.Request) {
+// GetRankingsTop operation middleware
+func (siw *ServerInterfaceWrapper) GetRankingsTop(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetRankingsParams
+	// ------------- Path parameter "top" -------------
+	var top int64
 
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "top", runtime.ParamLocationPath, chi.URLParam(r, "top"), &top)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "top", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetRankings(w, r, params)
+		siw.Handler.GetRankingsTop(w, r, top)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -143,11 +129,20 @@ func (siw *ServerInterfaceWrapper) GetRankings(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetRankingsUserUserID operation middleware
-func (siw *ServerInterfaceWrapper) GetRankingsUserUserID(w http.ResponseWriter, r *http.Request) {
+// GetRankingsTopUserID operation middleware
+func (siw *ServerInterfaceWrapper) GetRankingsTopUserID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
+
+	// ------------- Path parameter "top" -------------
+	var top int64
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "top", runtime.ParamLocationPath, chi.URLParam(r, "top"), &top)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "top", Err: err})
+		return
+	}
 
 	// ------------- Path parameter "userID" -------------
 	var userID string
@@ -158,19 +153,8 @@ func (siw *ServerInterfaceWrapper) GetRankingsUserUserID(w http.ResponseWriter, 
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetRankingsUserUserIDParams
-
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetRankingsUserUserID(w, r, userID, params)
+		siw.Handler.GetRankingsTopUserID(w, r, top, userID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -297,10 +281,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/interactions", wrapper.PostInteractions)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/rankings", wrapper.GetRankings)
+		r.Get(options.BaseURL+"/rankings/{top}", wrapper.GetRankingsTop)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/rankings/user/{userID}", wrapper.GetRankingsUserUserID)
+		r.Get(options.BaseURL+"/rankings/{top}/{userID}", wrapper.GetRankingsTopUserID)
 	})
 
 	return r

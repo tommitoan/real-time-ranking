@@ -1,0 +1,26 @@
+version: '3.8'
+
+volumes:
+  redis-data: {}
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ranking-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: real-time-ranking
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      REDIS_ADDR: redis:6379
+    restart: unless-stopped

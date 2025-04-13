@@ -11,6 +11,14 @@ type UpdateVideoRequest struct {
 	Title       string `json:"title,omitempty"`
 }
 
+type UpdateVideoReactionsRequest struct {
+	Comments  int64 `json:"comments,omitempty"`
+	Likes     int64 `json:"likes,omitempty"`
+	Shares    int64 `json:"shares,omitempty"`
+	Views     int64 `json:"views,omitempty"`
+	WatchTime int64 `json:"watch_time,omitempty"`
+}
+
 type Video struct {
 	bun.BaseModel `bun:"table:videos"`
 

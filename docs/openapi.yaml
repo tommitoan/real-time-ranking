@@ -54,18 +54,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRankingResponse'
 
-  /interactions:
-    post:
-      summary: Handle interactions (e.g., update user ranking or interactions with the video)
-      description: Receive and process interactions such as voting or user engagement with a video.
-      responses:
-        '200':
-          description: Interaction successfully processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InteractionResponse'
-
   /users:
     post:
       summary: Create a new user
@@ -211,6 +199,31 @@ paths:
         '204':
           description: Video deleted successfully
 
+  /videos/{id}/reactions:
+    patch:
+      summary: Update video reactions (like, comment, share, view)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVideoReactionsRequest'
+      responses:
+        '200':
+          description: Reactions updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoResponse'
+        '404':
+          description: Video not found
+
 components:
   schemas:
     RankingsResponse:
@@ -239,17 +252,6 @@ components:
         points:
           type: number
           format: float
-
-    InteractionResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        status:
-          type: string
-          enum:
-            - success
-            - failure
 
     CreateUserRequest:
       type: object
@@ -310,6 +312,31 @@ components:
           type: string
         thumbnail:
           type: string
+
+    UpdateVideoReactionsRequest:
+      type: object
+      properties:
+        likes:
+          type: integer
+          format: int64
+          example: 1
+        comments:
+          type: integer
+          format: int64
+          example: 0
+        shares:
+          type: integer
+          format: int64
+          example: 0
+        views:
+          type: integer
+          format: int64
+          example: 1
+        watch_time:
+          type: integer
+          format: int64
+          description: Time in seconds
+          example: 30
 
     VideoResponse:
       type: object

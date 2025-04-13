@@ -23,6 +23,7 @@ type (
 		CreateVideo(ctx context.Context, v *models.Video) (string, error)
 		GetVideo(ctx context.Context, id string) (*models.Video, error)
 		UpdateVideo(ctx context.Context, req models.UpdateVideoRequest, id string) error
+		UpdateVideoReactions(ctx context.Context, id string, r *models.UpdateVideoReactionsRequest) (*models.Video, error)
 		DeleteVideo(ctx context.Context, id string) error
 	}
 )

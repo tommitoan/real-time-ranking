@@ -28,6 +28,10 @@ func (t *testdatasource) UpdateVideo(ctx context.Context, req models.UpdateVideo
 	return nil
 }
 
+func (t *testdatasource) UpdateVideoReactions(ctx context.Context, id string, r *models.UpdateVideoReactionsRequest) (*models.Video, error) {
+	return nil, nil
+}
+
 func (t *testdatasource) DeleteVideo(ctx context.Context, id string) error {
 	if id != "video-456" {
 		return errors.New("not found")

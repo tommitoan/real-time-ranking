@@ -17,6 +17,10 @@ func (s *S) UpdateVideo(ctx context.Context, req models.UpdateVideoRequest, id s
 	return s.db.UpdateVideo(ctx, req, id)
 }
 
+func (s *S) UpdateVideoReactions(ctx context.Context, id string, r *models.UpdateVideoReactionsRequest) (*models.Video, error) {
+	return s.db.UpdateVideoReactions(ctx, id, r)
+}
+
 func (s *S) DeleteVideo(ctx context.Context, id string) error {
 	return s.db.DeleteVideo(ctx, id)
 }

@@ -8,9 +8,9 @@ type VideoRanking struct {
 type InteractionRequest struct {
 	VideoID   string  `json:"video_id"`
 	UserID    string  `json:"user_id"`
-	Views     int     `json:"views"`
-	Likes     int     `json:"likes"`
-	Comments  int     `json:"comments"`
-	Shares    int     `json:"shares"`
+	Views     int64   `json:"views"`
+	Likes     int64   `json:"likes"`
+	Comments  int64   `json:"comments"`
+	Shares    int64   `json:"shares"`
 	WatchTime float64 `json:"watch_time"`
 }

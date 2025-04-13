@@ -13,12 +13,6 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for InteractionResponseStatus.
-const (
-	Failure InteractionResponseStatus = "failure"
-	Success InteractionResponseStatus = "success"
-)
-
 // CreateUserRequest defines model for CreateUserRequest.
 type CreateUserRequest struct {
 	Email    string `json:"email"`
@@ -34,15 +28,6 @@ type CreateVideoRequest struct {
 	Url         string  `json:"url"`
 }
 
-// InteractionResponse defines model for InteractionResponse.
-type InteractionResponse struct {
-	Message *string                    `json:"message,omitempty"`
-	Status  *InteractionResponseStatus `json:"status,omitempty"`
-}
-
-// InteractionResponseStatus defines model for InteractionResponse.Status.
-type InteractionResponseStatus string
-
 // RankingsResponse defines model for RankingsResponse.
 type RankingsResponse struct {
 	Rankings *[]VideoRank `json:"rankings,omitempty"`
@@ -52,6 +37,17 @@ type RankingsResponse struct {
 type UpdateUserRequest struct {
 	Email    openapi_types.Email `json:"email"`
 	Username string              `json:"username"`
+}
+
+// UpdateVideoReactionsRequest defines model for UpdateVideoReactionsRequest.
+type UpdateVideoReactionsRequest struct {
+	Comments *int64 `json:"comments,omitempty"`
+	Likes    *int64 `json:"likes,omitempty"`
+	Shares   *int64 `json:"shares,omitempty"`
+	Views    *int64 `json:"views,omitempty"`
+
+	// WatchTime Time in seconds
+	WatchTime *int64 `json:"watch_time,omitempty"`
 }
 
 // UpdateVideoRequest defines model for UpdateVideoRequest.
@@ -110,11 +106,11 @@ type PostVideosJSONRequestBody = CreateVideoRequest
 // PutVideosIdJSONRequestBody defines body for PutVideosId for application/json ContentType.
 type PutVideosIdJSONRequestBody = UpdateVideoRequest
 
+// PatchVideosIdReactionsJSONRequestBody defines body for PatchVideosIdReactions for application/json ContentType.
+type PatchVideosIdReactionsJSONRequestBody = UpdateVideoReactionsRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Handle interactions (e.g., update user ranking or interactions with the video)
-	// (POST /interactions)
-	PostInteractions(w http.ResponseWriter, r *http.Request)
 	// Get real-time video rankings
 	// (GET /rankings/{top})
 	GetRankingsTop(w http.ResponseWriter, r *http.Request, top int64)
@@ -145,17 +141,14 @@ type ServerInterface interface {
 	// Update a video by ID
 	// (PUT /videos/{id})
 	PutVideosId(w http.ResponseWriter, r *http.Request, id string)
+	// Update video reactions (like, comment, share, view)
+	// (PATCH /videos/{id}/reactions)
+	PatchVideosIdReactions(w http.ResponseWriter, r *http.Request, id string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
-
-// Handle interactions (e.g., update user ranking or interactions with the video)
-// (POST /interactions)
-func (_ Unimplemented) PostInteractions(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
 
 // Get real-time video rankings
 // (GET /rankings/{top})
@@ -217,6 +210,12 @@ func (_ Unimplemented) PutVideosId(w http.ResponseWriter, r *http.Request, id st
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// Update video reactions (like, comment, share, view)
+// (PATCH /videos/{id}/reactions)
+func (_ Unimplemented) PatchVideosIdReactions(w http.ResponseWriter, r *http.Request, id string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
@@ -225,21 +224,6 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
-
-// PostInteractions operation middleware
-func (siw *ServerInterfaceWrapper) PostInteractions(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostInteractions(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
 
 // GetRankingsTop operation middleware
 func (siw *ServerInterfaceWrapper) GetRankingsTop(w http.ResponseWriter, r *http.Request) {
@@ -488,6 +472,32 @@ func (siw *ServerInterfaceWrapper) PutVideosId(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// PatchVideosIdReactions operation middleware
+func (siw *ServerInterfaceWrapper) PatchVideosIdReactions(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchVideosIdReactions(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -602,9 +612,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/interactions", wrapper.PostInteractions)
-	})
-	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/rankings/{top}", wrapper.GetRankingsTop)
 	})
 	r.Group(func(r chi.Router) {
@@ -633,6 +640,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/videos/{id}", wrapper.PutVideosId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/videos/{id}/reactions", wrapper.PatchVideosIdReactions)
 	})
 
 	return r

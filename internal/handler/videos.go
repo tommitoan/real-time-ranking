@@ -25,6 +25,15 @@ func (s *Server) PostVideos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = s.s.PostInteractions(r.Context(), models.InteractionRequest{
+		VideoID: id,
+		UserID:  req.OwnerId,
+	})
+	if err != nil {
+		http.Error(w, "Failed to update score", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	writeJSONResponse(w, &VideoResponse{Id: ptr(id)})
 }

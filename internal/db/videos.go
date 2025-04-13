@@ -40,6 +40,34 @@ func (d *datasource) UpdateVideo(ctx context.Context, req models.UpdateVideoRequ
 	return err
 }
 
+func (d *datasource) UpdateVideoReactions(ctx context.Context, id string, r *models.UpdateVideoReactionsRequest) (*models.Video, error) {
+	q := d.db.NewUpdate().Table("videos").Where("id = ?", id)
+
+	if r.Likes != 0 {
+		q = q.Set("likes = likes + ?", r.Likes)
+	}
+	if r.Comments != 0 {
+		q = q.Set("comments = comments + ?", r.Comments)
+	}
+	if r.Shares != 0 {
+		q = q.Set("shares = shares + ?", r.Shares)
+	}
+	if r.Views != 0 {
+		q = q.Set("views = views + ?", r.Views)
+	}
+	if r.WatchTime != 0 {
+		q = q.Set("watch_time = watch_time + ?", r.WatchTime)
+	}
+
+	q = q.Set("updated_at = ?", time.Now().UTC())
+
+	var video models.Video
+	if err := q.Returning("*").Scan(ctx, &video); err != nil {
+		return nil, err
+	}
+	return &video, nil
+}
+
 func (d *datasource) DeleteVideo(ctx context.Context, id string) error {
 	_, err := d.db.NewDelete().
 		Model((*models.Video)(nil)).

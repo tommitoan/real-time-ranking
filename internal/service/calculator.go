@@ -11,9 +11,8 @@ const (
 )
 
 func CalculateVideoScore(req models.InteractionRequest) float64 {
-	return float64(req.Views)*viewWeight +
-		float64(req.Likes)*likeWeight +
-		float64(req.Comments)*commentWeight +
-		float64(req.Shares)*shareWeight +
-		req.WatchTime*watchTimeWeight
+	return float64(req.Views*viewWeight+
+		req.Likes*likeWeight+
+		req.Comments*commentWeight+
+		req.Shares*shareWeight) + req.WatchTime*watchTimeWeight
 }

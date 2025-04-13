@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"github.com/redis/go-redis/v9"
 	"io"
 	"log"
@@ -15,11 +16,18 @@ type (
 	}
 )
 
-func Init(c Redis) {
-	if c == nil {
-		log.Fatal("Redis client is nil")
+func Init(addr string) {
+	client := redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
+
+	pong, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalln("failed to connect to redis: ", err)
 	}
-	_c = c
+	log.Println("Redis ping succeeded:", pong)
+
+	_c = client
 	log.Println("Connected to Redis")
 }
 

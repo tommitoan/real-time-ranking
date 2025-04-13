@@ -1,7 +1,8 @@
-package service
+package service_test
 
 import (
 	"real-time-ranking/internal/models"
+	"real-time-ranking/internal/service"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestCalculateVideoScore(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CalculateVideoScore(tt.args.req); got != tt.want {
+			if got := service.CalculateVideoScore(tt.args.req); got != tt.want {
 				t.Errorf("CalculateVideoScore() = %v, want %v", got, tt.want)
 			}
 		})

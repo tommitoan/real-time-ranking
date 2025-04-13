@@ -2,32 +2,32 @@
 
 APP_NAME := main
 ENTRY_POINT := cmd/api/main.go
-SWAG_DIR := cmd/api,internal/server,internal/model
-SWAG_OUTPUT := docs
+OAPI_CFG_DIR := docs/cfg.yaml
+OAPI_DIR := docs/openapi.yaml
 
-.PHONY: all swagger test build run
+.PHONY: all oapi test build run
 
-# Default: generate swagger, build and test
-all: swagger test build run
+# Default: generate handler, build and test
+all: oapi test build run
 
-# ----------- Build & Run -----------
+# ----------- OpenAPI -----------
 
-build:
-	@echo "🔨 Building..."
-	@go build -o $(APP_NAME) $(ENTRY_POINT)
-
-run:
-	@echo "🚀 Running..."
-	@./main
-
-# ----------- Swagger Docs -----------
-
-swagger:
-	@echo "📄 Generating Swagger docs..."
-	@swag init --dir $(SWAG_DIR) --output $(SWAG_OUTPUT)
+oapi:
+	@echo "Generating code from OpenAPI..."
+	@oapi-codegen -config=$(OAPI_CFG_DIR) $(OAPI_DIR)
 
 # ----------- Tests -----------
 
 test:
-	@echo "🧪 Running tests..."
+	@echo "Running tests..."
 	@go test ./... -v
+
+# ----------- Build & Run -----------
+
+build:
+	@echo "Building..."
+	@go build -o $(APP_NAME) $(ENTRY_POINT)
+
+run:
+	@echo "Running..."
+	@./main

@@ -10,6 +10,12 @@ type CreateUserRequest struct {
 	Email    string `json:"email"`
 }
 
+type UpdateUserRequest struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 type User struct {
 	bun.BaseModel `bun:"table:users"`
 

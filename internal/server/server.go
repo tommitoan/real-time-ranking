@@ -10,7 +10,9 @@ import (
 	"net/http"
 	"real-time-ranking/internal/app"
 	"real-time-ranking/internal/config"
+	"real-time-ranking/internal/db"
 	"real-time-ranking/internal/handler"
+	"real-time-ranking/internal/service"
 	"time"
 )
 
@@ -19,7 +21,8 @@ type Server struct {
 }
 
 func NewServer(cfg config.App) *Server {
-	srv := handler.NewServer()
+	svc := service.NewService(db.DataSource())
+	srv := handler.NewServer(svc)
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)

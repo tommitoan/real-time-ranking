@@ -9,13 +9,20 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"log"
 	"real-time-ranking/internal/config"
+	"real-time-ranking/internal/models"
 )
 
 var _dataSource *datasource
 
 type (
 	ServiceDataSource interface {
+		User
+	}
+	User interface {
 		CreateUser(ctx context.Context, username, email string) (string, error)
+		GetUser(ctx context.Context, id string) (*models.User, error)
+		UpdateUser(ctx context.Context, id string, username, email string) error
+		DeleteUser(ctx context.Context, id string) error
 	}
 )
 

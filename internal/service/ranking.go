@@ -7,7 +7,7 @@ import (
 	"real-time-ranking/internal/models"
 )
 
-func GetGlobalRankings(ctx context.Context, limit int64) ([]models.VideoRanking, error) {
+func (s *S) GetGlobalRankings(ctx context.Context, limit int64) ([]models.VideoRanking, error) {
 	client := cache.GetClient()
 	results, err := client.ZRevRangeWithScores(ctx, "ranking:global", 0, limit-1).Result()
 	if err != nil {
@@ -25,7 +25,7 @@ func GetGlobalRankings(ctx context.Context, limit int64) ([]models.VideoRanking,
 	return rankings, nil
 }
 
-func GetUserRankings(ctx context.Context, limit int64, userID string) ([]models.VideoRanking, error) {
+func (s *S) GetUserRankings(ctx context.Context, limit int64, userID string) ([]models.VideoRanking, error) {
 	client := cache.GetClient()
 	results, err := client.ZRevRangeWithScores(ctx, "ranking:user:"+userID, 0, limit-1).Result()
 	if err != nil {

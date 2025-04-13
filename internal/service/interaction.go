@@ -8,7 +8,7 @@ import (
 	"real-time-ranking/internal/models"
 )
 
-func PostInteractions(ctx context.Context, req models.InteractionRequest) error {
+func (s *S) PostInteractions(ctx context.Context, req models.InteractionRequest) error {
 	vidScore := CalculateVideoScore(req)
 	key := "ranking:global"
 

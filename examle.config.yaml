@@ -1,0 +1,9 @@
+app:
+  logging_level: DEBUG
+  port: :8080
+redis:
+#  connection_string: localhost:6379
+  connection_string: redis:6379
+database:
+  dsn: postgresql://username:password@host/real-time-db?sslmode=require
+  debug: true
